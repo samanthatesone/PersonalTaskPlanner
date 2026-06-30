@@ -1,18 +1,14 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
 
         ArrayList<Task> myTaskList = new ArrayList<>();
-
-        Task task1 = new Task("Intro to C++", "Complete programming assignment 6A and 6B");
-        Task task2 = new Task("Assembly Language", "Read chapter 4 and review extensively");
-        Task task3 = new Task("UC Transfer App Questions", "Draft outlines for the mandatory PIQ responses");
-
-        myTaskList.add(task1);
-        myTaskList.add(task2);
-        myTaskList.add(task3);
+        loadTasks(myTaskList);
 
         Scanner input = new Scanner(System.in);
         boolean keepRunning = true;
@@ -41,7 +37,7 @@ public class Main {
 
                         String status = "[ ]";
                         if (currentTask.isCompleted()) {
-                            status = "[COMPLETED]";
+                            status = "[X]";
                         }
 
                         System.out.println((i + 1) + ". " + status + " " + currentTask.getTitle() + " --> " + currentTask.getDescription());
@@ -56,10 +52,10 @@ public class Main {
                 System.out.println("Enter new task description: ");
                 String newDescription = input.nextLine();
 
-                Task newTask = new Task(newTitle, newDescription);
+                Task newTask = new Task(newTitle, newDescription, false);
 
                 myTaskList.add(newTask);
-                System.out.println("Successfully added task: " + newTitle);
+                System.out.println("Successfully added task: " + newTitle + " --> " + newDescription);
             }
 
             else if (userChoice == 3) {
@@ -72,7 +68,7 @@ public class Main {
                 if (index >= 0 && index < myTaskList.size()) {
                     Task targetTask = myTaskList.get(index);
                     targetTask.setCompleted(true);
-                    System.out.println("Marked task as completed: " + targetTask.getTitle());
+                    System.out.println("Marked task as completed: " + targetTask.getTitle() + " --> " + targetTask.getDescription());
                 }
                 else {
                     System.out.println("Invalid task number.");
@@ -88,7 +84,7 @@ public class Main {
 
                 if (index >= 0 && index < myTaskList.size()) {
                     Task removedTask = myTaskList.remove(index);
-                    System.out.println("Successfully removed task: " + removedTask.getTitle());
+                    System.out.println("Successfully removed task: " + removedTask.getTitle() + " --> "  + removedTask.getDescription());
                 }
                 else {
                     System.out.println("Invalid task number.");
@@ -97,6 +93,7 @@ public class Main {
 
             else if (userChoice == 5) {
                 System.out.println("Closing task list. Goodbye!");
+                saveTasks(myTaskList);
                 keepRunning = false;
             }
 
@@ -111,5 +108,42 @@ public class Main {
             System.out.println((i + 1) + ". " + currentTask.getTitle() +  " --> " + currentTask.getDescription());
         }
 
+    }
+
+    public static void loadTasks(ArrayList<Task> list) {
+        File file = new File("tasks.txt");
+        if (!file.exists()) {
+            return;
+        }
+
+        try (Scanner reader = new Scanner(file)) {
+            while (reader.hasNextLine()) {
+                String line = reader.nextLine();
+                String[] parts = line.split("\\|");
+                if (parts.length == 3) {
+                    String title = parts[0];
+                    String description = parts[1];
+                    boolean isCompleted = Boolean.parseBoolean(parts[2]);
+
+                    Task t = new Task(title, description, isCompleted);
+                    list.add(t);
+                }
+            }
+        }
+        catch (IOException e) {
+            System.out.println("Error loading tasks: " + e.getMessage());
+        }
+    }
+
+    public static void saveTasks(ArrayList<Task> list) {
+        try (PrintWriter writer = new PrintWriter(new File("tasks.txt"))) {
+            for (int i = 0; i < list.size(); i++) {
+                Task t = list.get(i);
+                writer.println(t.getTitle() + "|" + t.getDescription() + "|" + t.isCompleted());
+            }
+        }
+        catch (IOException e) {
+            System.out.println("Error saving tasks: " + e.getMessage());
+        }
     }
 }
