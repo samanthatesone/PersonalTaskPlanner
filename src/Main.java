@@ -136,6 +136,8 @@ public class Main {
     }
 
     public static void saveTasks(ArrayList<Task> list) {
+        File file = new File("tasks.txt");
+
         try (PrintWriter writer = new PrintWriter(new File("tasks.txt"))) {
             for (int i = 0; i < list.size(); i++) {
                 Task t = list.get(i);
